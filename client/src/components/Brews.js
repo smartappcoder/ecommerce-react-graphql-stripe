@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { Box, Heading, Image, Text, Card, Button, Mask, IconButton } from 'gestalt';
-import { calculatePrice } from '../utils';
+import { calculatePrice, setCart, getCart } from '../utils';
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:1337";
 const graphqlApiUrl = process.env.REACT_APP_GRAPHQL_API_URL || apiUrl + "/graphql"
@@ -13,7 +13,7 @@ console.log("Brews graphqlApiUrl", graphqlApiUrl);
 const Brews = (props) => {
     let [brand, setBrand] = useState("");
     let [brews, setBrews] = useState([]);
-    let [cartItems, setCartItems] = useState([]);
+    let [cartItems, setCartItems] = useState(getCart());
 
     console.log("Brand Id: ", props.match.params.brandId);
     // Temp, WIP, just get going
@@ -48,6 +48,9 @@ const Brews = (props) => {
         const filteredItems = cartItems.filter(item => item._id !== itemToDeleteId);
         setCartItems(filteredItems);
     }
+
+    // save to localStorage when updatedItems changes
+    useEffect(() => {setCart(cartItems)}, [cartItems]);
 
     useEffect(() => {
         const GET_BREWS_BY_BRAND = `query {
