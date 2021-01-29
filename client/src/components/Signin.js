@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Container, Box, Heading, Button, TextField } from 'gestalt';
 import ToastMessage from './ToastMessage';
 import { setToken } from '../utils';
 //import { Redirect } from 'react-router-dom';
-import Strapi from "strapi-sdk-javascript/build/main";
+//import Strapi from "strapi-sdk-javascript/build/main";
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:1337";
-const strapi = new Strapi(apiUrl);
+//const strapi = new Strapi(apiUrl);
+const graphqlApiUrl = process.env.REACT_APP_GRAPHQL_API_URL || apiUrl + "/graphql"
 
 const Signin = (props) => {
-  const [signup, setSignup] = useState(
+  const [signin, setSignin] = useState(
     {
-      username: "",
-      password: ""
+      email: "",
+      password: "",
+      jwt: ""
     }
   );
 
@@ -24,14 +27,51 @@ const Signin = (props) => {
 
   const [loading, setLoading] = useState(false);
 
+  const userLoginMutation = ({ email, password }) => {
+    const USER_SIGN_IN = `mutation {
+      login(input: { identifier: "${email}", password: "${password}"}) {
+        jwt
+      }
+    }`;
+
+    console.log("email: ", email);
+    console.log("password: ", password);
+
+    //var queryResult;
+  
+    axios.post(
+        graphqlApiUrl, {
+        query: USER_SIGN_IN
+    }).then((response) => {
+        console.log("Fetch Data: ", response);
+        setSignin.jwt = response.data.data.login.jwt;
+        console.log("jwt: ", setSignin.jwt);
+    }, (error) => {
+        console.log(error);
+    });
+    
+    // fetchData().then((response) => {
+    //   console.log("Fetch Data: ", response);
+    //   return response;      
+    // });
+    //console.log("queryResult: ", queryResult)
+    // fetchData().then((response) => {
+    //   console.log("Fetch Data: ", response);
+    //   return response;      
+    // });
+    // queryResult = fetchData();
+    // console.log("queryResult: ", queryResult)
+    // return null;
+  };
+
   const handleChange = ({ event, value }) => {
     event.persist();
-    const updatedSignup = signup;
-    setSignup({ ...updatedSignup, [event.target.name]: value })
+    const updatedSignin = signin;
+    setSignin({ ...updatedSignin, [event.target.name]: value })
   }
 
-  const isFormEmpty = ({ username, password }) => {
-    return !username || !password;
+  const isFormEmpty = ({ email, password }) => {
+    return !email || !password;
   }
 
   const resetToastState = () => {
@@ -47,9 +87,9 @@ const Signin = (props) => {
 
   const redirectUser = path => props.history.push(path);
 
-  const handleSubmit = async event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    if (isFormEmpty(signup)) {
+    if (isFormEmpty(signin)) {
       showToast("Filled in all fields");
       return;
     }
@@ -59,15 +99,18 @@ const Signin = (props) => {
       // set loading true
       setLoading(true);
       // make request to register user with strapi
-      const response = await strapi.login(
-        signup.username,
-        signup.password,
-      )
-      // set loading false
+      // const response = await strapi.login(
+      //   signup.username,
+      //   signup.password,
+      // )
+
+      // Query graphql with axios, will return a promise, then to capture the results
+      // const response = userLoginMutation(signin);
+      userLoginMutation(signin);
       setLoading(false);
       // put token (to manage user session) in local storage
-      console.log(response);
-      setToken(response.jwt);
+      console.log("Response: ", signin.jwt);
+      setToken(signin.jwt);
       // redirect user to home page
       redirectUser('/');
     } catch (err) {
@@ -105,12 +148,12 @@ const Signin = (props) => {
             direction="column"
             alignItems="center">
             <Heading color="midnight">Welcome back!</Heading>
-            {/* Username input  */}
+            {/* Strapi (v3.4.5) graphql uses Email input as identifier */}
             <TextField
-              id="username"
-              type="text"
-              name="username"
-              placeholder="Username"
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Email Address"
               onChange={handleChange}
             />
             {/* Password input  */}
