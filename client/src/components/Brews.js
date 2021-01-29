@@ -6,7 +6,6 @@ import { calculatePrice, setCart, getCart } from '../utils';
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:1337";
 const graphqlApiUrl = process.env.REACT_APP_GRAPHQL_API_URL || apiUrl + "/graphql"
-
 console.log("Brews apiUrl", apiUrl);
 console.log("Brews graphqlApiUrl", graphqlApiUrl);
 
