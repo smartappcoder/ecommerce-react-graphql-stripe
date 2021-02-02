@@ -1,7 +1,7 @@
 'use strict';
 
 const { parseMultipartData, sanitizeEntity } = require('strapi-utils');
-const stripe = require('stripe')('sk_test_51IFCN9HTVOK6Lsc3s0ghPqfLq35psqNUH3VwAI12QVwKf8QS4vIze1utVfbBZ1uYwvQoea2YJL7KPnxsc6ZL9PHK00PhtVIKpP');
+const stripe = require('stripe')('stripe-secret-key');
 
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/concepts/controllers.html#core-controllers)
